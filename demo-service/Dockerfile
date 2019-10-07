@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/rhoar-nodejs/nodejs-10
+FROM node:10
 
 USER node
 
