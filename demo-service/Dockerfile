@@ -13,7 +13,7 @@ COPY keycloak.json .
 COPY app.js .
 
 RUN chmod -R 775 /home/node/app
-RUN chown -R node:root /home/node/app
+RUN chown -R node:1000 /home/node/app
 
 EXPOSE 8080
 
