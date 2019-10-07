@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/rhoar-nodejs/nodejs-11
+FROM registry.access.redhat.com/rhoar-nodejs/nodejs-10
 
 WORKDIR /usr/src/app
 
