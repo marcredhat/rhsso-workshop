@@ -12,7 +12,7 @@
     },
     "parameters": [
         {
-            "displayName": "Application Name",
+            "displayName": "Marc - Application Name",
             "description": "The name for the application.",
             "name": "APPLICATION_NAME",
             "value": "demo-service",
