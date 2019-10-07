@@ -1,7 +1,6 @@
 FROM registry.access.redhat.com/rhoar-nodejs/nodejs-10
 
-
-RUN npm install --global yarn pm2
+USER node
 
 WORKDIR /home/node 
 
@@ -22,6 +21,8 @@ USER 1000
 
 
 CMD [ "npm", "start" ]
+
+
 
 
 
