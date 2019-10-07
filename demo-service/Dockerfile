@@ -1,6 +1,6 @@
 FROM registry.access.redhat.com/rhoar-nodejs/nodejs-10
 
-WORKDIR /usr/src/app
+WORKDIR /home/node 
 
 COPY package.json .
 
