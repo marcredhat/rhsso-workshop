@@ -1,6 +1,6 @@
 FROM registry.access.redhat.com/rhoar-nodejs/nodejs-10
 
-RUN adduser node root
+
 RUN npm install --global yarn pm2
 
 WORKDIR /home/node 
