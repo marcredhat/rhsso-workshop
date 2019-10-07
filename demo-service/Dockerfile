@@ -1,6 +1,6 @@
 FROM registry.access.redhat.com/rhoar-nodejs/nodejs-10
 
-USER 1001
+RUN adduser node root
 
 WORKDIR /home/node 
 
@@ -12,6 +12,9 @@ COPY keycloak.json .
 COPY app.js .
 
 EXPOSE 8080
+
+
+USER 1001 
 
 
 CMD [ "npm", "start" ]
