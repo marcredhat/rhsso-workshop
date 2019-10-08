@@ -57,11 +57,7 @@ ENV PHP_CONTAINER_SCRIPTS_PATH=/usr/share/container-scripts/php/ \
     HTTPD_DATA_ORIG_PATH=/var/www \
     HTTPD_VAR_PATH=/var
 
-# Copy the S2I scripts from the specific language image to $STI_SCRIPTS_PATH
-COPY ./s2i/bin/ $STI_SCRIPTS_PATH
 
-# Copy extra files to the image.
-COPY ./root/ /
 
 # Reset permissions of filesystem to default values
 # Generate SSL certs and reset permissions of filesystem to default values
