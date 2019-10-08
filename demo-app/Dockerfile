@@ -1,51 +1,33 @@
-FROM ubuntu:16.04
+#+++++++++++++++++++++++++++++++++++++++
+# Dockerfile for webdevops/php-apache:centos-7-php7
+#    -- automatically generated  --
+#+++++++++++++++++++++++++++++++++++++++
 
-ENV DEBIAN_FRONTEND=noninteractive
+FROM webdevops/php:centos-7-php7
 
+ENV WEB_DOCUMENT_ROOT=/app \
+    WEB_DOCUMENT_INDEX=index.php \
+    WEB_ALIAS_DOMAIN=*.vm \
+    WEB_PHP_TIMEOUT=600 \
+    WEB_PHP_SOCKET=""
+ENV WEB_PHP_SOCKET=127.0.0.1:9000
 
-RUN echo "ServerName 0.0.0.0" | tee /etc/apache2/conf-available/servername.conf
-RUN a2enconf servername
+COPY conf/ /opt/docker/
 
-RUN apt-get update && apt-get install -yq --no-install-recommends \
-    apt-utils \
-    curl \
-    # Install git
-    git \
+RUN set -x \
     # Install apache
-    apache2 \
-    # Install php 7.2
-    libapache2-mod-php7.2 \
-    php7.2-cli \
-    php7.2-json \
-    php7.2-curl \
-    php7.2-fpm \
-    php7.2-gd \
-    php7.2-ldap \
-    php7.2-mbstring \
-    php7.2-mysql \
-    php7.2-soap \
-    php7.2-sqlite3 \
-    php7.2-xml \
-    php7.2-zip \
-    php7.2-intl \
-    php-imagick \
-    # Install tools
-    openssl \
-    nano \
-    graphicsmagick \
-    imagemagick \
-    ghostscript \
-    mysql-client \
-    iputils-ping \
-    locales \
-    sqlite3 \
-    ca-certificates \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    && yum-install \
+        httpd \
+        mod_ssl \
+    && sed -ri ' \
+        s!^(\s*CustomLog)\s+\S+!\1 /proc/self/fd/1!g; \
+        s!^(\s*ErrorLog)\s+\S+!\1 /proc/self/fd/2!g; \
+        ' /etc/httpd/conf/httpd.conf /etc/httpd/conf.d/ssl.conf \
+    && docker-run-bootstrap \
+    && docker-image-cleanup
 
+RUN sed -i 's/Listen 80/Listen 8080/' /etc/httpd/conf/httpd.conf
 
-RUN sed -i 's/Listen 80/Listen 8080/' /etc/apache2/ports.conf
-RUN cat /etc/apache2/ports.conf
-RUN chmod 777 /var/run/apache2
 
 COPY *.js /var/www/html/
 COPY *.php /var/www/html/
@@ -53,11 +35,6 @@ COPY *.css /var/www/html/
 
 EXPOSE 8080
 
-WORKDIR /var/www/html
 
-
-#HEALTHCHECK --interval=5s --timeout=3s --retries=3 CMD curl -f http://localhost || exit 1
-
-CMD apachectl -D FOREGROUND 
 
 USER 1001
