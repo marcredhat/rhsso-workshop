@@ -1,4 +1,4 @@
-FROM ubi8/s2i-base:1
+FROM registry.fedoraproject.org/f29/s2i-base:latest
 
 # This image provides an Apache+PHP environment for running PHP
 # applications.
