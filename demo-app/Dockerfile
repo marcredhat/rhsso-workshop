@@ -38,6 +38,6 @@ COPY *.js /var/www/html/
 COPY *.php /var/www/html/
 COPY *.css /var/www/html/
 
-RUN chmod -R a+r /
+RUN chmod -R a+r /var/www/html
 
 
