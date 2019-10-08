@@ -1,87 +1,47 @@
-FROM registry.fedoraproject.org/f29/s2i-base:latest
+# Use an official PHP runtime as a parent image
+FROM php:7.3-apache-stretch
 
-# This image provides an Apache+PHP environment for running PHP
-# applications.
+ARG DEBIAN_FRONTEND=noninteractive
 
-EXPOSE 8080
-EXPOSE 8443
+# Install any needed packages
+RUN apt-get update -yqq && \
+  apt-get install -yqq --no-install-recommends \
+    apt-utils \
+    openssl \
+    libzip-dev zip unzip \
+    git \
+    mariadb-client \
+    libpng-dev
+RUN docker-php-ext-configure zip --with-libzip
+RUN docker-php-ext-install pdo_mysql zip
+RUN docker-php-ext-configure gd
+RUN docker-php-ext-install gd
+RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+RUN php -r "if (hash_file('sha384', 'composer-setup.php') === '48e3236262b34d30969dca3c37281b3b4bbe3221bda826ac6a9a62d6444cdb0dcd0615698a5cbe587c3f0fe57a54d8f5') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+RUN php composer-setup.php
+RUN php -r "unlink('composer-setup.php');"
+RUN mv composer.phar /usr/local/bin/composer
 
-ENV PHP_VERSION=7.2 \
-    PATH=$PATH:/usr/bin
+ENV COMPOSER_ALLOW_SUPERUSER 1
+ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 
-ENV SUMMARY="Platform for building and running PHP $PHP_VERSION applications" \
-    DESCRIPTION="PHP $PHP_VERSION available as container is a base platform for \
-building and running various PHP $PHP_VERSION applications and frameworks. \
-PHP is an HTML-embedded scripting language. PHP attempts to make it easy for developers \
-to write dynamically generated web pages. PHP also offers built-in database integration \
-for several commercial and non-commercial database management systems, so writing \
-a database-enabled webpage with PHP is fairly simple. The most common use of PHP coding \
-is probably as a replacement for CGI scripts."
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
+RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+RUN a2enmod rewrite
 
-ENV NAME=php \
-    VERSION=0 \
-    RELEASE=1 \
-    ARCH=x86_64
+USER root
 
-LABEL summary="$SUMMARY" \
-      description="$DESCRIPTION" \
-      io.k8s.description="$DESCRIPTION" \
-      io.k8s.display-name="Apache 2.4 with PHP $PHP_VERSION" \
-      io.openshift.expose-services="8080:http" \
-      io.openshift.tags="builder,php,php72,rh-php72" \
-      name="$FGC/$NAME" \
-      com.redhat.component="$NAME" \
-      version="$VERSION" \
-      usage="s2i build https://github.com/sclorg/s2i-php-container.git --context-dir=/$PHP_VERSION/test/test-app $FGC/$NAME sample-server" \
-      maintainer="SoftwareCollections.org <sclorg@redhat.com>"
+# Clean up
+RUN apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
+    rm /var/log/lastlog /var/log/faillog
 
-# Install Apache httpd and PHP
-RUN INSTALL_PKGS="php php-mysqlnd php-bcmath php-json \
-                  php-gd php-intl php-ldap php-mbstring php-pdo \
-                  php-process php-soap php-opcache php-xml \
-                  php-gmp php-pecl-apcu mod_ssl hostname" && \
-    yum install -y --setopt=tsflags=nodocs $INSTALL_PKGS --nogpgcheck && \
-    rpm -V $INSTALL_PKGS && \
-    yum -y clean all --enablerepo='*'
-
-ENV PHP_CONTAINER_SCRIPTS_PATH=/usr/share/scripts/php/ \
-    APP_DATA=${APP_ROOT}/src \
-    PHP_DEFAULT_INCLUDE_PATH=/usr/share/pear \
-    PHP_SYSCONF_PATH=/etc/ \
-    PHP_HTTPD_CONF_FILE=php.conf \
-    HTTPD_CONFIGURATION_PATH=${APP_ROOT}/etc/conf.d \
-    HTTPD_MAIN_CONF_PATH=/etc/httpd/conf \
-    HTTPD_MAIN_CONF_D_PATH=/etc/httpd/conf.d \
-    HTTPD_VAR_RUN=/var/run/httpd \
-    HTTPD_DATA_PATH=/var/www \
-    HTTPD_DATA_ORIG_PATH=/var/www \
-    HTTPD_VAR_PATH=/var
-
-
-
-# Fedora uses by default 'event' MPM module
-# switch to 'prefork' to provide same user experience as with RHEL image
-# Code taken from 'config_mpm()' function in sclorg/httpd-container repo
-ENV HTTPD_MPM=prefork \
-    HTTPD_MAIN_CONF_MODULES_D_PATH=/etc/httpd/conf.modules.d
-
-RUN if [ -v HTTPD_MPM -a -f ${HTTPD_MAIN_CONF_MODULES_D_PATH}/00-mpm.conf ]; then \
-    mpmconf=${HTTPD_MAIN_CONF_MODULES_D_PATH}/00-mpm.conf; \
-    sed -i -e 's,^LoadModule,#LoadModule,' ${mpmconf}; \
-    sed -i -e "/LoadModule mpm_${HTTPD_MPM}/s,^#LoadModule,LoadModule," ${mpmconf}; \
-    echo "---> Set MPM to ${HTTPD_MPM} in ${mpmconf}"; \
-  fi
+RUN usermod -u 1000 www-data
 
 COPY *.js /var/www/html/
 COPY *.php /var/www/html/
 COPY *.css /var/www/html/
 
-
-
-USER 1001
-
-# Set the default CMD to print the usage of the language image
-CMD $STI_SCRIPTS_PATH/usage
 
 
 
