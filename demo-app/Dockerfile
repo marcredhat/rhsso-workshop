@@ -3,8 +3,6 @@ FROM httpd:2.4
 RUN sed -i 's/Listen 80/Listen 8080/' /usr/local/apache2/conf/httpd.conf
 RUN echo "ServerName 0.0.0.0" >> /usr/local/apache2/conf/httpd.conf
 
-RUN chmod 777 /var/run/apache2
-
 COPY *.js /var/www/html/
 COPY *.php /var/www/html/
 COPY *.css /var/www/html/
