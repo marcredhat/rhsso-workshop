@@ -44,7 +44,7 @@ RUN INSTALL_PKGS="php php-mysqlnd php-bcmath php-json \
     rpm -V $INSTALL_PKGS && \
     yum -y clean all --enablerepo='*'
 
-ENV PHP_CONTAINER_SCRIPTS_PATH=/usr/share/container-scripts/php/ \
+ENV PHP_CONTAINER_SCRIPTS_PATH=/usr/share/scripts/php/ \
     APP_DATA=${APP_ROOT}/src \
     PHP_DEFAULT_INCLUDE_PATH=/usr/share/pear \
     PHP_SYSCONF_PATH=/etc/ \
@@ -58,11 +58,6 @@ ENV PHP_CONTAINER_SCRIPTS_PATH=/usr/share/container-scripts/php/ \
     HTTPD_VAR_PATH=/var
 
 
-
-# Reset permissions of filesystem to default values
-# Generate SSL certs and reset permissions of filesystem to default values
-RUN /usr/libexec/httpd-ssl-gencerts && \
-    /usr/libexec/container-setup && rpm-file-permissions
 
 # Fedora uses by default 'event' MPM module
 # switch to 'prefork' to provide same user experience as with RHEL image
@@ -81,8 +76,7 @@ COPY *.js /var/www/html/
 COPY *.php /var/www/html/
 COPY *.css /var/www/html/
 
-# Reset permissions of filesystem to default values
-RUN /usr/libexec/container-setup && rpm-file-permissions
+
 
 USER 1001
 
