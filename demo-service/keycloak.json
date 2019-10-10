@@ -1,5 +1,5 @@
 {
-  "realm": "ocp",
+  "realm": "demo",
   "enable-cors": true,
   "bearer-only": true,
   "auth-server-url": "${env.KEYCLOAK_URL}",
