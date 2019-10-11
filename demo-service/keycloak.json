@@ -1,8 +1,10 @@
 {
   "realm": "demo",
-  "enable-cors": true,
-  "bearer-only": true,
-  "auth-server-url": "${env.KEYCLOAK_URL}",
-  "ssl-required": "external",
-  "resource": "demo-service"
+  "auth-server-url": "https://sso.apps-crc.testing/auth",
+  "ssl-required": "none",
+  "resource": "demo-app",
+  "public-client": true,
+  "verify-token-audience": true,
+  "use-resource-role-mappings": true,
+  "confidential-port": 0
 }
